@@ -1,28 +1,54 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="container">
+      <Header />
+      <router-view
+        v-on:add-watchlist="addWatchlist"
+        v-bind:watchlist="watchlist"
+        v-on:mark-watched="handleToggle"
+        v-on:delete-movie="handleDelete"
+      />
+    </div>
   </div>
 </template>
-
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import Header from './components/header';
+import { saveData, getData } from './utils/handle-data';
+import './styles/app.scss';
 export default {
-  name: 'App',
   components: {
-    HelloWorld
-  }
-}
-</script>
+    Header,
+  },
+  data() {
+    return {
+      watchlist: [],
+    };
+  },
+  methods: {
+    addWatchlist(movieData) {
+      const exist = this.watchlist.findIndex(
+        item => item.imdbID === movieData.imdbID
+      );
+      if (exist !== -1) return null;
+      this.watchlist = [...this.watchlist, movieData];
+      saveData(this.watchlist);
+    },
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+    handleToggle(id) {
+      console.log(id);
+      this.watchlist = this.watchlist.map(movie =>
+        movie.imdbID === id ? { ...movie, watched: !movie.watched } : movie
+      );
+      saveData(this.watchlist);
+    },
+    handleDelete(id) {
+      this.watchlist = this.watchlist.filter(movie => movie.imdbID !== id);
+      saveData(this.watchlist);
+    },
+  },
+  created() {
+    this.watchlist = getData() || [];
+  },
+};
+</script>
+<style></style>
